@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="D3 homework">
+<title>D3 Homework</title>
+<style>
+#chart rect{
+  fill: #003d63;
+}
+
+#chart text{
+  fill: rgb(209, 177, 177);
+  font: 10px sans-serif;
+  text-anchor: end; 
+}
+
+.axis text{
+  font: 10px sans-serif;
+}
+
+.axis path, .axis line{
+  fill: none;
+  stroke : rgb(101, 63, 63);
+  shape-rendering: crispEdges;
+}
+
+body {
+  background: #1a1a1a;
+  color : #eaeaea;
+  padding : 10px;
+}
+</style>
+</head>
+<body>
+<div id="chart"></div> 
+</body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script>
+
+hw3data =
+[
+  {"term": "Spring 16", "students": 160},
+  {"term": "Fall 16", "students": 170},
+  {"term": "Spring 17", "students": 120},
+  {"term": "Fall 17", "students": 185},
+  {"term": "Spring 18", "students": 190},
+  {"term": "Fall 18", "students": 195}
+];
+var tooltip = d3.select('body').append('div')
+   .style('position', 'absolute')
+   .style('padding', '0 10px')
+   .style('background', 'white')
+   .style('opacity', 0);
+var margin = { top: 20, right: 20, bottom: 30, left: 40};
+var height = 200 - margin.top - margin.bottom, 
+	width = 500 - margin.left - margin.right, 
+	barW = 40, 
+	barSpace = 35;
+var verticalGuide = d3.scaleLinear()
+   .domain([0, d3.max(hw3data.map((h) => h.students))])
+   .range([height, 0]);
+var yS = d3.scaleLinear()
+		   .domain([0, d3.max(hw3data.map((h) => h.students))])
+		   .range([0, height]);
+var xS = d3.scaleBand()
+		   .domain(hw3data.map((h) => h.term))
+		   .range([0, width])
+		   .padding(0.1);
+var graph = d3.select('#chart')
+			  .append('svg')
+			  .attr('width', width + margin.left + margin.right)
+			  .attr('height', height + margin.top + margin.bottom)
+			  .style('background', '#788180')
+			  .append('g')
+			  .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+			  
+graph.selectAll('rect')
+	 .data(hw3data)
+	 .enter()
+	 .append('rect')
+	 .style('fill', '#DC76A8')
+	 .attr('width', xS.bandwidth)
+	 .attr('height', function(d) { return yS(d.students); })
+	 .attr('x', function(d, i) {return xS(d.term, i); })
+	 .attr('y', function(d) {return height - yS(d.students) })
+     .on('mouseover', function(d) {
+		tooltip.transition()
+			.style('opacity', .8)
+		tooltip.html((d.students) + ' Students in Term ' + (d.term))
+			.style('left', (d3.event.pageX - 35) + 'px')
+			.style('top', (d3.event.pageY - 30) + 'px')
+		d3.select(this)
+			.style('opacity', .4)
+	})
+	.on('mouseout', function(d) {
+	  d3.select(this)
+	    .style('opacity', 1)
+	});
+graph.append('g')
+  .call(d3.axisLeft(yS).scale(verticalGuide));
+graph.append('g')
+  .call(d3.axisBottom(xS))
+  .attr('transform', 'translate(0, ' + height + ')');
+</script>
+</html>
